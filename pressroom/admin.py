@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import reporter, address
+from .models import Reporter, Address
 # Register your models here.
-admin.site.register(reporter)
-admin.site.register(address)
+admin.site.register(Reporter)
+admin.site.register(Address)
