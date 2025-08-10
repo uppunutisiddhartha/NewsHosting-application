@@ -50,7 +50,10 @@ def verify_email_otp(request):
         # Check expiry (3 minutes = 180 seconds)
         if time.time() - otp_time > 180:
             messages.error(request, "OTP expired. Please request a new one.")
-            request.session.flush()  # Clear session
+            # Clear OTP info only
+            for key in ['otp', 'otp_email', 'otp_time']:
+                if key in request.session:
+                    del request.session[key]
             return redirect('index')
 
         if entered_otp == session_otp:
@@ -59,7 +62,11 @@ def verify_email_otp(request):
                 defaults={"email": otp_email, "is_active": True}
             )
             login(request, user)
-            request.session.flush()  # Clear session after login
+            # Clear OTP session data only, keep user logged in
+            for key in ['otp', 'otp_email', 'otp_time']:
+                if key in request.session:
+                    del request.session[key]
+
             messages.success(request, "Login successful!")
             return redirect('user')
         else:
@@ -67,6 +74,7 @@ def verify_email_otp(request):
             return redirect('verify_email_otp')
 
     return render(request, 'verify_email_otp.html')
+
 
 def index(request):
     return render(request, 'index.html')
