@@ -130,6 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
+GOOGLE_API_KEY = "AIzaSyAvqUMxshrTkHN_EfY6GWj265NyMOybuzY"
 
 
 
