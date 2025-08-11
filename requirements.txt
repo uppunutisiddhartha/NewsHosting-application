@@ -1,4 +1,7 @@
-asgiref==3.9.1
-Django==5.2.5
+asgiref==3.8.1
+backports.zoneinfo==0.2.1
+django==4.2.23
+pillow==10.4.0
 sqlparse==0.5.3
+typing-extensions==4.13.2
 tzdata==2025.2
