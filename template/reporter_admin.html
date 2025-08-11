@@ -1,0 +1,1054 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporter Applications | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #eef2ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+            --radius-sm: 0.25rem;
+            --radius: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: var(--gray-800);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header h1 i {
+            color: var(--primary);
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            min-width: 180px;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .stat-card.pending {
+            border-left: 4px solid var(--warning);
+        }
+
+        .stat-card.approved {
+            border-left: 4px solid var(--success);
+        }
+
+        .stat-card.rejected {
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Main content */
+        .applications-container {
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-300);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+
+        .status-filter {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .status-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: white;
+            border: 1px solid var(--gray-300);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-btn:hover {
+            background: var(--gray-100);
+        }
+
+        .status-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Application cards */
+        .applications-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .application-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .profile-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-light);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-username {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .status-approved {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-rejected {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .card-body {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-label {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-item i {
+            color: var(--gray-400);
+            width: 16px;
+            text-align: center;
+        }
+
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-size: 0.875rem;
+            text-decoration: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius-sm);
+            background: var(--primary-light);
+            transition: all 0.2s;
+        }
+
+        .document-link:hover {
+            background: rgba(67, 97, 238, 0.15);
+        }
+
+        .address-block {
+            background: var(--gray-100);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .address-block small {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .date-joined {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .approve-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: #0e9f74;
+        }
+
+        .reject-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: #dc2626;
+        }
+
+        .view-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #3a56d4;
+        }
+
+        .disabled-btn {
+            background: var(--gray-300);
+            color: var(--gray-600);
+            cursor: not-allowed;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-image-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--gray-100);
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+        }
+
+        .modal-details {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-description {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .verification-checklist {
+            margin-bottom: 2rem;
+        }
+
+        .verification-checklist h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.75rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .checklist-item i {
+            color: var(--success);
+            margin-top: 0.125rem;
+        }
+
+        .checklist-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            border: none;
+            font-size: 1.25rem;
+            color: var(--gray-500);
+            transition: all 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        /* Empty state */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray-300);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--gray-500);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Mobile warning */
+        .mobile-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            color: white;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .mobile-warning i {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--warning);
+        }
+
+        .mobile-warning h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mobile-warning p {
+            margin-bottom: 2rem;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .applications-list {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .stats-container {
+                flex-wrap: wrap;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            
+            .status-filter {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                grid-template-columns: 1fr;
+                max-height: 90vh;
+            }
+            
+            .modal-image-container {
+                max-height: 300px;
+                padding: 1rem;
+            }
+            
+            .modal-details {
+                overflow-y: visible;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .applications-list {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .card-header {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .card-footer {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .action-buttons {
+                width: 100%;
+            }
+            
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            /* Show mobile warning */
+            .mobile-warning {
+                display: flex;
+            }
+            
+            /* Hide main content on mobile */
+            .container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Warning -->
+    <div class="mobile-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>Desktop Experience Required</h2>
+        <p>This admin dashboard is designed for desktop use with larger screens. Please switch to a laptop or desktop computer for the best experience.</p>
+        <p>Mobile support is coming soon!</p>
+    </div>
+
+    <!-- Main Content (hidden on mobile) -->
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-user-check"></i> Reporter Applications</h1>
+            <div class="stats-container">
+                <div class="stat-card pending">
+                    <h3>Pending Review</h3>
+                    <p>{{ pending_count }}</p>
+                </div>
+                <div class="stat-card approved">
+                    <h3>Approved</h3>
+                    <p>{{ approved_count }}</p>
+                </div>
+                <div class="stat-card rejected">
+                    <h3>Rejected</h3>
+                    <p>{{ rejected_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="applications-container">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search reporters...">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="status-filter">
+                        <button class="status-btn active">All</button>
+                        <button class="status-btn">Pending</button>
+                        <button class="status-btn">Approved</button>
+                        <button class="status-btn">Rejected</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="applications-list">
+                {% for reporter in reporters %}
+                <div class="application-card" data-status="{{ reporter.status|lower }}">
+                    <div class="card-header">
+                        {% if reporter.profile_picture %}
+                        <img src="{{ reporter.profile_picture.url }}" alt="{{ reporter.name }}" class="profile-img">
+                        {% else %}
+                        <img src="{% static 'images/default_profile.png' %}" alt="Default profile" class="profile-img">
+                        {% endif %}
+                        <div class="user-info">
+                            <div class="user-name">{{ reporter.name }}</div>
+                            <div class="user-username">@{{ reporter.user.username }}</div>
+                        </div>
+                        <span class="status-badge status-{{ reporter.status|lower }}">{{ reporter.status }}</span>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-label">Email:</div>
+                            <div class="info-value">
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <a href="mailto:{{ reporter.email }}">{{ reporter.email }}</a>
+                                </div>
+                            </div>
+
+                            <div class="info-label">Phone:</div>
+                            <div class="info-value">
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <a href="tel:{{ reporter.phone }}">{{ reporter.phone }}</a>
+                                </div>
+                            </div>
+
+                            <div class="info-label">ID Proof:</div>
+                            <div class="info-value">
+                                {% if reporter.idproof %}
+                                <a href="{{ reporter.idproof.url }}" target="_blank" class="document-link" onclick="event.stopPropagation()">
+                                    <i class="fas fa-id-card"></i> View Document
+                                </a>
+                                {% else %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">No ID proof provided</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="info-label">Address:</div>
+                            <div class="info-value">
+                                {% for addr in reporter.address_set.all %}
+                                <div class="address-block">
+                                    {{ addr.address_line_1 }}{% if addr.address_line_2 %}, {{ addr.address_line_2 }}{% endif %}, 
+                                    {{ addr.city }}, {{ addr.state }}, {{ addr.country }} - {{ addr.postal_code }}
+                                    <small><i class="fas fa-phone"></i> {{ addr.phone_number }}</small>
+                                    {% if addr.is_default %}<small>(Default)</small>{% endif %}
+                                </div>
+                                {% empty %}
+                                <span style="color: var(--danger); font-size: 0.875rem;">No address provided</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if reporter.status == "Rejected" and reporter.rejection_reason %}
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: var(--danger-light); border-radius: var(--radius-sm);">
+                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--danger); margin-bottom: 0.25rem;">
+                                <i class="fas fa-comment-dots"></i> Rejection Reason
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--gray-700);">
+                                {{ reporter.rejection_reason }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="date-joined">
+                            <i class="far fa-calendar-alt"></i> Joined {{ reporter.date_joined|date:"M d, Y" }}
+                        </div>
+                        <div class="action-buttons">
+                            {% if reporter.status == "Pending" %}
+                            <form action="{% url 'handle_reporter_status' reporter.id %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="action-btn approve-btn">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                            <button class="action-btn reject-btn" onclick="openRejectModal('{{ reporter.id }}')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                            {% else %}
+                            <button class="action-btn view-btn" onclick="openModal('{{ reporter.profile_picture.url }}', 'profile')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="fas fa-user-slash"></i>
+                    <h3>No Reporter Applications Found</h3>
+                    <p>There are currently no reporter applications to review. Check back later.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Image/Details Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <div class="modal-image-container">
+                <img id="modalImage" src="" alt="" class="modal-image">
+            </div>
+            <div class="modal-details">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-title">Document Verification</h3>
+                    <p class="modal-description" id="modal-description">Please carefully review the document for authenticity and consistency with the provided information.</p>
+                </div>
+                
+                <div class="verification-checklist">
+                    <h4>Verification Checklist</h4>
+                    <div class="checklist-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="checklist-text">Document appears authentic with no signs of tampering</div>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="checklist-text">Name matches the application details</div>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="checklist-text">Photo resembles the profile picture</div>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="checklist-text">Document is not expired</div>
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="checklist-text">All information is clearly visible</div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="action-btn approve-btn" style="flex: 1;">
+                        <i class="fas fa-check"></i> Approve Document
+                    </button>
+                    <button class="action-btn reject-btn" style="flex: 1;">
+                        <i class="fas fa-times"></i> Reject Document
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div class="modal" id="rejectModal">
+        <div class="modal-content" style="max-width: 500px; grid-template-columns: 1fr;">
+            <button class="close-modal" onclick="closeRejectModal()">&times;</button>
+            <div class="modal-details">
+                <div class="modal-header">
+                    <h3 class="modal-title">Reject Application</h3>
+                    <p class="modal-description">Please provide a clear reason for rejecting this application. The reporter will receive this feedback.</p>
+                </div>
+                
+                <form id="rejectForm" method="POST" style="margin-top: 1.5rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reject">
+                    <input type="hidden" id="reporterId" name="reporter_id" value="">
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="rejectionReason" style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-700); margin-bottom: 0.5rem;">Reason for Rejection</label>
+                        <textarea id="rejectionReason" name="rejection_reason" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.875rem;" placeholder="Explain why this application is being rejected..." required></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="action-btn" style="flex: 1; background: var(--gray-200); color: var(--gray-700);" onclick="closeRejectModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="action-btn reject-btn" style="flex: 1;">
+                            <i class="fas fa-times"></i> Confirm Rejection
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile detection
+        function isMobile() {
+            return window.innerWidth <= 576;
+        }
+        
+        // Open image/document modal
+        function openModal(imageUrl, type) {
+            if (isMobile()) return;
+            
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const title = document.getElementById('modal-title');
+            const description = document.getElementById('modal-description');
+            
+            modalImg.src = imageUrl;
+            
+            if (type === 'profile') {
+                title.textContent = 'Profile Photo Verification';
+                description.textContent = 'Verify that the profile photo matches the ID document and appears to be a legitimate photo of the applicant.';
+            } else {
+                title.textContent = 'ID Document Verification';
+                description.textContent = 'Carefully examine the ID document for authenticity and consistency with the profile information.';
+            }
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Open reject modal
+        function openRejectModal(reporterId) {
+            if (isMobile()) return;
+            
+            document.getElementById('reporterId').value = reporterId;
+            document.getElementById('rejectModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close reject modal
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            const rejectModal = document.getElementById('rejectModal');
+            
+            if (event.target === imageModal) {
+                closeModal();
+            }
+            
+            if (event.target === rejectModal) {
+                closeRejectModal();
+            }
+        }
+        
+        // Filter applications by status
+        document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const status = this.textContent.toLowerCase();
+                const cards = document.querySelectorAll('.application-card');
+                
+                cards.forEach(card => {
+                    if (status === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        if (card.dataset.status === status) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Search functionality
+        const searchInput = document.querySelector('.search-box input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.application-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.user-name').textContent.toLowerCase();
+                const username = card.querySelector('.user-username').textContent.toLowerCase();
+                const email = card.querySelector('.contact-item a[href^="mailto:"]').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || username.includes(searchTerm) || email.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Make application cards clickable to view details
+        document.querySelectorAll('.application-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Don't open if clicking on a link or button
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('button')) {
+                    return;
+                }
+                
+                const profileImg = this.querySelector('.profile-img').src;
+                openModal(profileImg, 'profile');
+            });
+        });
+    </script>
+</body>
+</html>

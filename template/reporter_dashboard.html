@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Reporter Speech to Text (Telugu)</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    background: #f7f9fc;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  .container {
+    max-width: 700px;
+    width: 90%;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
+  input[type="text"] {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  textarea {
+    width: 100%;
+    height: 200px;
+    font-size: 1.1rem;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: vertical;
+  }
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 100%;
+  }
+  button:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+  }
+  .status {
+    margin-top: 10px;
+    font-style: italic;
+    color: #555;
+  }
+
+  @media (max-width: 480px) {
+    textarea {
+      height: 150px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Reporter Speech to Text (Telugu)</h1>
+  <label for="title">Report Title</label>
+  <input type="text" id="title" placeholder="Enter report title" />
+
+  <label for="transcript">Report Content (Speech to Text)</label>
+  <textarea id="transcript" placeholder="Start speaking after clicking the button..."></textarea>
+
+  <button id="toggle-btn">Start Recording</button>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+  const startBtn = document.getElementById('toggle-btn');
+  const transcriptArea = document.getElementById('transcript');
+  const statusDiv = document.getElementById('status');
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    statusDiv.textContent = "Sorry, your browser does not support Speech Recognition.";
+    startBtn.disabled = true;
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'te-IN';  // Telugu language
+
+    let isRecording = false;
+
+    recognition.onstart = () => {
+      statusDiv.textContent = "🎤 Listening... Speak in Telugu.";
+      startBtn.textContent = "Stop Recording";
+      isRecording = true;
+    };
+
+    recognition.onend = () => {
+      statusDiv.textContent = "🛑 Stopped listening.";
+      startBtn.textContent = "Start Recording";
+      isRecording = false;
+    };
+
+    recognition.onerror = (event) => {
+      statusDiv.textContent = "Error: " + event.error;
+    };
+
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = transcriptArea.value || '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        let transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+      transcriptArea.value = finalTranscript + interimTranscript;
+    };
+
+    startBtn.addEventListener('click', () => {
+      if (isRecording) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
