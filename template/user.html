@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>News Reels with Top Toggle Menu</title>
+  <style>
+    /* Reset & basic styles */
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      overflow: hidden; /* prevent body scroll */
+    }
+
+    /* Top fixed toggle menu container */
+    .top-toggle-container {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #007bff;
+      color: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      z-index: 1000;
+      user-select: none;
+    }
+
+    .top-toggle-button {
+      background: white;
+      color: #007bff;
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .top-toggle-button:hover {
+      background-color: #e0e0e0;
+    }
+
+    .top-menu {
+      margin-left: 16px;
+      display: none;
+      gap: 12px;
+    }
+
+    .top-menu button {
+      background: white;
+      color: #007bff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    .top-menu button:hover {
+      background-color: #e0e0e0;
+    }
+
+    /* Container for vertical scroll with top padding to not hide under fixed bar */
+    .news-reels-container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-top: 50px; /* space for top toggle */
+    }
+
+    /* Each news card fills viewport */
+    .news-card {
+      scroll-snap-align: start;
+      height: 100vh;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* Media container - 40% height */
+    .media-container {
+      height: 40%;
+      background: black;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .media-container img,
+    .media-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* News content - 60% height */
+    .news-content {
+      height: 60%;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Toggle comments button */
+    .toggle-comments-btn {
+      align-self: flex-start;
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .toggle-comments-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .news-text {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.3rem;
+      color: #222;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.5;
+      color: #555;
+      font-size: 1rem;
+    }
+
+    /* Buttons container */
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #444;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .actions button:hover {
+      color: #000;
+    }
+
+    .actions button span.counter {
+      font-size: 1rem;
+      color: #888;
+    }
+
+    /* Comment section */
+    .comments-section {
+      margin-top: 12px;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      display: none;
+      flex-direction: column;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .comments-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0 0 8px 0;
+      max-height: 100px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+
+    .comments-list li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #ddd;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .comments-list li:last-child {
+      border-bottom: none;
+    }
+
+    .comment-input-container {
+      display: flex;
+      gap: 6px;
+    }
+
+    .comment-input {
+      flex-grow: 1;
+      padding: 6px 8px;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .comment-submit-btn {
+      padding: 6px 12px;
+      font-size: 1rem;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .comment-submit-btn:hover {
+      background-color: #1e7e34;
+    }
+
+    /* Scrollbar style for news content */
+    .news-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .news-content::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.1);
+      border-radius: 3px;
+    }
+
+    /* Responsive max width on bigger screens */
+    @media (min-width: 600px) {
+      .news-card {
+        max-width: 600px;
+        margin: 0 auto;
+        border-radius: 6px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top toggle menu -->
+  <div class="top-toggle-container">
+    <button id="menuToggleBtn" class="top-toggle-button">☰ Menu</button>
+    <div id="topMenu" class="top-menu">
+      <button onclick="alert('Support clicked!')">Support</button>
+      <button onclick="alert('Post News clicked!')">Post News</button>
+    </div>
+  </div>
+
+  <div class="news-reels-container" id="newsContainer">
+    <!-- News cards inserted here by JS -->
+  </div>
+
+  <script>
+    // Toggle top menu show/hide
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const topMenu = document.getElementById('topMenu');
+
+    menuToggleBtn.addEventListener('click', () => {
+      if (topMenu.style.display === 'flex') {
+        topMenu.style.display = 'none';
+      } else {
+        topMenu.style.display = 'flex';
+      }
+    });
+
+    const newsData = [
+      {
+        id: 1,
+        type: "image",
+        src: "https://picsum.photos/id/1015/600/400",
+        title: "Breaking News Headline 1",
+        description: "This is the detailed news content for item 1. It explains all about this interesting news."
+      },
+      {
+        id: 2,
+        type: "video",
+        src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm",
+        title: "Video News Headline 2",
+        description: "Detailed news description with video content. Watch this amazing video for more info."
+      },
+      {
+        id: 3,
+        type: "image",
+        src: "https://picsum.photos/id/1022/600/400",
+        title: "Latest Update Headline 3",
+        description: "More news details go here. You can scroll through these news reels smoothly."
+      }
+    ];
+
+    const newsContainer = document.getElementById('newsContainer');
+
+    newsData.forEach(news => {
+      const card = document.createElement('div');
+      card.classList.add('news-card');
+
+      // Media container
+      const mediaDiv = document.createElement('div');
+      mediaDiv.classList.add('media-container');
+      if (news.type === 'image') {
+        const img = document.createElement('img');
+        img.src = news.src;
+        img.alt = news.title;
+        mediaDiv.appendChild(img);
+      } else if (news.type === 'video') {
+        const video = document.createElement('video');
+        video.src = news.src;
+        video.controls = true;
+        mediaDiv.appendChild(video);
+      }
+      card.appendChild(mediaDiv);
+
+      // News content container
+      const contentDiv = document.createElement('div');
+      contentDiv.classList.add('news-content');
+
+      // Toggle comments button
+      const toggleCommentsBtn = document.createElement('button');
+      toggleCommentsBtn.textContent = "Toggle Comments";
+      toggleCommentsBtn.classList.add('toggle-comments-btn');
+
+      // Text container
+      const textDiv = document.createElement('div');
+      textDiv.classList.add('news-text');
+
+      const title = document.createElement('h3');
+      title.textContent = news.title;
+
+      const desc = document.createElement('p');
+      desc.textContent = news.description;
+
+      textDiv.appendChild(title);
+      textDiv.appendChild(desc);
+
+      // Comments section (initially hidden)
+      const commentsSection = document.createElement('div');
+      commentsSection.classList.add('comments-section');
+
+      const commentsList = document.createElement('ul');
+      commentsList.classList.add('comments-list');
+
+      const commentInputContainer = document.createElement('div');
+      commentInputContainer.classList.add('comment-input-container');
+
+      const commentInput = document.createElement('input');
+      commentInput.type = "text";
+      commentInput.placeholder = "Write a comment...";
+      commentInput.classList.add('comment-input');
+
+      const commentSubmitBtn = document.createElement('button');
+      commentSubmitBtn.textContent = "Send";
+      commentSubmitBtn.classList.add('comment-submit-btn');
+
+      commentInputContainer.appendChild(commentInput);
+      commentInputContainer.appendChild(commentSubmitBtn);
+
+      commentsSection.appendChild(commentsList);
+      commentsSection.appendChild(commentInputContainer);
+
+      // Actions container (buttons)
+      const actionsDiv = document.createElement('div');
+      actionsDiv.classList.add('actions');
+
+      // Like button
+      const likeBtn = document.createElement('button');
+      likeBtn.innerHTML = '👍 <span class="counter">0</span>';
+      likeBtn.addEventListener('click', () => {
+        const counterSpan = likeBtn.querySelector('.counter');
+        let count = parseInt(counterSpan.textContent);
+        counterSpan.textContent = count + 1;
+      });
+
+      // Dislike button
+      const dislikeBtn = document.createElement('button');
+      dislikeBtn.innerHTML = '👎 <span class="counter">0</span>';
+      dislikeBtn.addEventListener('click', () => {
+        const counterSpan = dislikeBtn.querySelector('.counter');
+        let count = parseInt(counterSpan.textContent);
+        counterSpan.textContent = count + 1;
+      });
+
+      // Share button
+      const shareBtn = document.createElement('button');
+      shareBtn.textContent = '🔗 Share';
+      shareBtn.addEventListener('click', () => {
+        if (navigator.share) {
+          navigator.share({
+            title: news.title,
+            text: news.description,
+            url: window.location.href,
+          }).catch((error) => {
+            alert("Error sharing: " + error);
+          });
+        } else {
+          alert("Sharing not supported on this browser.");
+        }
+      });
+
+      // Comment button
+      const commentBtn = document.createElement('button');
+      commentBtn.textContent = '💬 Comment';
+      commentBtn.addEventListener('click', () => {
+        // Toggle comment section visibility on comment button click as well
+        if (commentsSection.style.display === 'flex') {
+          commentsSection.style.display = 'none';
+        } else {
+          commentsSection.style.display = 'flex';
+          commentInput.focus();
+        }
+      });
+
+      // Append buttons to actions
+      actionsDiv.appendChild(likeBtn);
+      actionsDiv.appendChild(dislikeBtn);
+      actionsDiv.appendChild(shareBtn);
+      actionsDiv.appendChild(commentBtn);
+
+      // Toggle comments button toggles comment section visibility
+      toggleCommentsBtn.addEventListener('click', () => {
+        if (commentsSection.style.display === 'flex') {
+          commentsSection.style.display = 'none';
+        } else {
+          commentsSection.style.display = 'flex';
+          commentInput.focus();
+        }
+      });
+
+      // Add new comment logic
+      commentSubmitBtn.addEventListener('click', () => {
+        const text = commentInput.value.trim();
+        if (text === "") return;
+        const li = document.createElement('li');
+        li.textContent = text;
+        commentsList.appendChild(li);
+        commentInput.value = "";
+        // Scroll to bottom so new comment is visible
+        commentsList.scrollTop = commentsList.scrollHeight;
+      });
+
+      // Enter key submits comment
+      commentInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          commentSubmitBtn.click();
+        }
+      });
+
+      contentDiv.appendChild(toggleCommentsBtn);
+      contentDiv.appendChild(textDiv);
+      contentDiv.appendChild(commentsSection);
+      contentDiv.appendChild(actionsDiv);
+
+      card.appendChild(contentDiv);
+      newsContainer.appendChild(card);
+    });
+  </script>
+
+</body>
+</html>

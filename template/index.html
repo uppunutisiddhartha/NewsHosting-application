@@ -1,11 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>User OTP Login</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Navigation buttons */
+    .nav-buttons {
+      margin-bottom: 30px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-buttons a button {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    .nav-buttons a button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Link style */
+    a.back-link {
+      display: inline-block;
+      margin-bottom: 30px;
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: color 0.3s ease;
+    }
+    a.back-link:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+
+    /* Message container */
+    .messages {
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 20px;
+    }
+    .messages ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .messages li {
+      padding: 12px 18px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
+      font-size: 0.95rem;
+    }
+    .messages li.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .messages li.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .messages li.warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    /* Form styling */
+    form {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgb(0 0 0 / 0.1);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #444;
+      font-size: 1.1rem;
+    }
+
+    input[type="email"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      outline-offset: 2px;
+      outline-color: transparent;
+    }
+    input[type="email"]:focus {
+      border-color: #007bff;
+      outline-color: #007bff;
+    }
+
+    button[type="submit"] {
+      margin-top: 18px;
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgb(40 167 69 / 0.5);
+      transition: background-color 0.25s ease;
+    }
+    button[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+  </style>
 </head>
 <body>
-    <H1>Useer</H1>
+  <h1>User</h1>
+
+  <div class="nav-buttons">
+    <a href="{% url 'reporter_registration' %}">
+      <button type="button">Go to Admin Page</button>
+    </a>
+    <a href="{% url 'reporter_admin_dashboard' %}">
+      <button type="button">Go to Reporter Admin</button>
+    </a>
+  </div>
+
+  <a class="back-link" href="{% url 'reporter_login' %}">← Go back to login</a>
+
+  <!-- Messages -->
+  <div class="messages">
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
+  <!-- OTP Request Form -->
+  <form method="POST" action="{% url 'send_email_otp' %}">
+    {% csrf_token %}
+    <label for="email">Enter your email:</label>
+    <input type="email" id="email" name="email" placeholder="example@example.com" required />
+    <button type="submit">Get OTP</button>
+  </form>
 </body>
 </html>
