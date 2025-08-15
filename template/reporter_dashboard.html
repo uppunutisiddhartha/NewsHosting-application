@@ -1,153 +1,207 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Reporter Speech to Text (Telugu)</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 0;
-    background: #f7f9fc;
-    color: #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    margin-bottom: 10px;
-  }
-  .container {
-    max-width: 700px;
-    width: 90%;
-    background: white;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 8px;
-  }
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-  }
-  input[type="text"] {
-    width: 100%;
-    font-size: 1.1rem;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  textarea {
-    width: 100%;
-    height: 200px;
-    font-size: 1.1rem;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    resize: vertical;
-  }
-  button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    font-size: 1.1rem;
-    padding: 12px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 100%;
-  }
-  button:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
-  .status {
-    margin-top: 10px;
-    font-style: italic;
-    color: #555;
-  }
-
-  @media (max-width: 480px) {
-    textarea {
-      height: 150px;
-    }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporter Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-gray: #f8f9fa;
+            --dark-gray: #343a40;
+            --text-color: #495057;
+            --white: #ffffff;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .header h1 {
+            color: var(--dark-gray);
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        /* Profile Section - Responsive */
+        .profile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        @media (min-width: 768px) {
+            .profile {
+                flex-direction: row;
+                text-align: left;
+            }
+        }
+        
+        .profile-pic-container {
+            margin-right: 0;
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .profile-pic-container {
+                margin-right: 25px;
+                margin-bottom: 0;
+            }
+        }
+        
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--white);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .profile-info h2 {
+            margin: 0 0 8px 0;
+            color: var(--dark-gray);
+            font-size: 22px;
+        }
+        
+        .profile-info p {
+            margin: 6px 0;
+            color: var(--text-color);
+            font-size: 15px;
+        }
+        
+        .profile-info .email {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        /* Stats Section - Responsive Grid */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        @media (min-width: 576px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .stat-box h3 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .stat-box p {
+            margin: 8px 0 0;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Reporter Speech to Text (Telugu)</h1>
-  <label for="title">Report Title</label>
-  <input type="text" id="title" placeholder="Enter report title" />
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Reporter Dashboard</h1>
+    </div>
 
-  <label for="transcript">Report Content (Speech to Text)</label>
-  <textarea id="transcript" placeholder="Start speaking after clicking the button..."></textarea>
+    <!-- Profile Section -->
+    <div class="profile">
+        <div class="profile-pic-container">
+            {% if reporter.profile_picture %}
+            <img src="{{ reporter.profile_picture.url }}" alt="Profile Picture" class="profile-pic">
+                        {% else %}
+                 <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Picture" class="profile-pic">
+                            {% endif %}
 
-  <button id="toggle-btn">Start Recording</button>
-  <div class="status" id="status"></div>
+        </div>
+        <div class="profile-info">
+            <h2>{{ reporter.user.first_name }} {{ reporter.user.last_name }}</h2>
+            <p class="email">{{ reporter.user.email }}</p>
+            <p><strong>Role:</strong> Reporter</p>
+            {% if reporter.bio %}
+                <p>{{ reporter.bio }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats">
+        <div class="stat-box">
+            <h3>{{ reporter.articles.count }}</h3>
+            <p>Articles Published</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ reporter.pending_articles.count }}</h3>
+            <p>Pending Reviews</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ reporter.drafts.count }}</h3>
+            <p>Drafts</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ reporter.total_views }}</h3>
+            <p>Total Views</p>
+        </div>
+    </div>
 </div>
-
-<script>
-  const startBtn = document.getElementById('toggle-btn');
-  const transcriptArea = document.getElementById('transcript');
-  const statusDiv = document.getElementById('status');
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    statusDiv.textContent = "Sorry, your browser does not support Speech Recognition.";
-    startBtn.disabled = true;
-  } else {
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'te-IN';  // Telugu language
-
-    let isRecording = false;
-
-    recognition.onstart = () => {
-      statusDiv.textContent = "🎤 Listening... Speak in Telugu.";
-      startBtn.textContent = "Stop Recording";
-      isRecording = true;
-    };
-
-    recognition.onend = () => {
-      statusDiv.textContent = "🛑 Stopped listening.";
-      startBtn.textContent = "Start Recording";
-      isRecording = false;
-    };
-
-    recognition.onerror = (event) => {
-      statusDiv.textContent = "Error: " + event.error;
-    };
-
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-      let finalTranscript = transcriptArea.value || '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        let transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-      transcriptArea.value = finalTranscript + interimTranscript;
-    };
-
-    startBtn.addEventListener('click', () => {
-      if (isRecording) {
-        recognition.stop();
-      } else {
-        recognition.start();
-      }
-    });
-  }
-</script>
 
 </body>
 </html>

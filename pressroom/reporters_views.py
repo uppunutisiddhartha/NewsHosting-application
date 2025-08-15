@@ -2,22 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from .models import Reporter, Address, EmailVerificationToken
-
-
-# Home page
-
-
+from .models import *
+from .utils import send_email  # ✅ Centralized email sender
 
 # Reporter registration with email verification
 def reporter_registration(request):
     if request.method == "POST":
-        # Collect form data
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
@@ -25,7 +19,6 @@ def reporter_registration(request):
         profile_picture = request.FILES.get("profile_picture")
         idproof = request.FILES.get("idproof")
 
-        # Address fields
         district = request.POST.get("district")
         mandal = request.POST.get("mandal")
         city = request.POST.get("city")
@@ -34,12 +27,10 @@ def reporter_registration(request):
         country = request.POST.get("country")
         phone_number = request.POST.get("phone_number")
 
-        # Check if phone already registered
         if User.objects.filter(username=phone).exists():
             messages.error(request, "This phone number is already registered.")
             return redirect('reporter_registration')
 
-        # Create Django User and Reporter profile
         user = User.objects.create_user(
             username=phone,
             password=password,
@@ -56,7 +47,6 @@ def reporter_registration(request):
             email_verified=False,
         )
 
-        # Create reporter address
         Address.objects.create(
             reporter=reporter_obj,
             district=district,
@@ -69,14 +59,12 @@ def reporter_registration(request):
             is_default=True
         )
 
-        # Generate email verification token
         token_obj = EmailVerificationToken.objects.create(reporter=reporter_obj)
         verification_url = request.build_absolute_uri(
             reverse('verify_email', kwargs={'token': str(token_obj.token)})
         )
 
-        # Send verification email
-        send_mail(
+        send_email(
             subject="Verify your Reporter Email",
             message=(
                 f"Hello {name},\n\n"
@@ -84,9 +72,7 @@ def reporter_registration(request):
                 f"{verification_url}\n\n"
                 f"This link will expire in 24 hours."
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
+            recipient_list=[email]
         )
 
         messages.success(request, "Registration successful! Please check your email to verify your account.")
@@ -95,7 +81,6 @@ def reporter_registration(request):
     return render(request, "reporter_registration.html")
 
 
-# Email verification for reporter
 def verify_email(request, token):
     try:
         token_obj = EmailVerificationToken.objects.get(token=token)
@@ -107,7 +92,6 @@ def verify_email(request, token):
         messages.error(request, "Verification link expired. Please register again.")
         return redirect('reporter_registration')
 
-    # Mark email as verified
     reporter = token_obj.reporter
     reporter.email_verified = True
     reporter.save()
@@ -117,13 +101,11 @@ def verify_email(request, token):
     return redirect('reporter_login')
 
 
-# Admin view to manage reporters
 def reporter_admin_view(request):
     reporters = Reporter.objects.all().order_by("-date_joined")
     return render(request, "reporter_admin.html", {"reporters": reporters})
 
 
-# Approve or reject reporter application
 @require_POST
 def handle_reporter_status(request, reporter_id):
     reporter_obj = get_object_or_404(Reporter, id=reporter_id)
@@ -141,22 +123,15 @@ def handle_reporter_status(request, reporter_id):
         subject = "Reporter Application Rejected"
         message = f"Your application was rejected. Reason: {reason}"
     else:
-        return redirect("reporter_admin_dashboard")  # Invalid action
+        return redirect("reporter_admin_dashboard")
 
     reporter_obj.save()
 
-    # Send status update email
-    send_mail(
-        subject,
-        message,
-        settings.DEFAULT_FROM_EMAIL,
-        [reporter_obj.email]
-    )
+    send_email(subject, message, [reporter_obj.email])
 
     return redirect("reporter_admin_dashboard")
 
 
-# Reporter login
 def reporter_login(request):
     if request.method == "POST":
         username = request.POST.get("username")
@@ -169,7 +144,7 @@ def reporter_login(request):
             if reporter:
                 if reporter.status == "Approved":
                     login(request, user)
-                    return redirect("reporter_dashboard")
+                    return redirect("news_posting")
                 elif reporter.status == "Pending":
                     messages.info(request, "Your registration is still pending approval.")
                 elif reporter.status == "Rejected":
@@ -180,16 +155,44 @@ def reporter_login(request):
     return render(request, "reporter_login.html")
 
 
-# Reporter dashboard (only accessible to logged-in reporters)
-def reporter_dashboard(request):
+def news_posting(request):
     if not request.user.is_authenticated:
         return redirect("reporter_login")
 
     reporter = request.user.reporter
-    addresses = Address.objects.filter(reporter=reporter)
-    return render(request, "reporter_dashboard.html", {"reporter": reporter, "addresses": addresses})
+    districts = District.objects.all() 
+    return render(request, "news_posting.html", {"districts": districts, "reporter": reporter})
 
 
-# Admin homepage
-def adminhome(request):
-    return render(request, "adminhome.html")
+def posting_news(request):
+    districts = District.objects.all()
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        district_id = request.POST.get("district")
+        mandal = request.POST.get("mandal")
+        image = request.FILES.get("image")
+        video = request.FILES.get("video")
+        breaking_news = request.POST.get("breaking_news") == "on"
+
+        district = District.objects.get(id=district_id)
+        News.objects.create(
+            reporter=request.user.reporter,
+            title=title,
+            content=content,
+            District=district,
+            mandal=mandal,
+            image=image,
+            video=video,
+            breaking_news=breaking_news
+        )
+
+        return redirect("news_posting")
+
+    return render(request, "news_posting.html", {"districts": districts})
+
+
+def reporter_dashboard(request):
+    reporter = Reporter.objects.get(user=request.user)
+    return render(request, 'reporter_dashboard.html', {'reporter': reporter})

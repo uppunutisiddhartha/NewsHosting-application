@@ -1,7 +1,4 @@
 from django.shortcuts import render, redirect
-
-
-# views.py
 import random
 import time
 from django.core.mail import send_mail
@@ -18,7 +15,7 @@ def send_email_otp(request):
         # Generate 4-digit OTP
         otp = str(random.randint(1000, 9999))
 
-        # Store OTP & timestamp in session
+        # Store OTP & timestamp in sessionz
         request.session['otp'] = otp
         request.session['otp_email'] = email
         request.session['otp_time'] = time.time()

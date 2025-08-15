@@ -7,5 +7,7 @@ urlpatterns = [
     path('reporter-admin/pending/', reporter_admin_view, name='reporter_admin_dashboard'),
     path('reporter-admin/handle/<int:reporter_id>/', handle_reporter_status, name='handle_reporter_status'),
     path('reporter/login/', reporter_login, name='reporter_login'),
+    path('reporter/newsposting/', news_posting, name='news_posting'),
     path('reporter/dashboard/', reporter_dashboard, name='reporter_dashboard'),
+    path('posting-news/', posting_news, name='posting-news'),
 ]

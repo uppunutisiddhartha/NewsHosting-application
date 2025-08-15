@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cluster Admin Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container mt-5" style="max-width: 400px;">
+    <h2 class="mb-4 text-center">Cluster Admin Login</h2>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      {% if otp_required %}
+        <!-- OTP input form -->
+        <div class="mb-3">
+          <label for="otp" class="form-label">Enter OTP</label>
+          <input required type="text" id="otp" name="otp" maxlength="6" class="form-control" placeholder="6-digit OTP" autofocus />
+        </div>
+      {% else %}
+        <!-- Username/password login form -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input required type="email" id="email" name="email" class="form-control" placeholder="Enter email" autofocus />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input required type="password" id="password" name="password" class="form-control" placeholder="Password" />
+        </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary w-100">
+        {% if otp_required %} Verify OTP {% else %} Login {% endif %}
+      </button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

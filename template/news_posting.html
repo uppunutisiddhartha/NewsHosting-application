@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post News</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* Preview section */
+        .preview {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .preview img, .preview video {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .preview-content {
+            margin-top: 15px;
+        }
+        .post-meta {
+            font-size: 14px;
+            color: gray;
+            margin-top: 10px;
+        }
+        .post-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .post-actions span {
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Post News</h2>
+
+    <form id="newsForm" action="{% url 'posting-news' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+
+        <div class="form-group">
+            <label for="image">Image</label>
+            <input type="file" id="image" name="image" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="video">Video</label>
+            <input type="file" id="video" name="video" accept="video/*">
+        </div>
+
+        <div class="form-group">
+            <label for="content">Content</label>
+            <textarea id="content" name="content" rows="4" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="district">District</label>
+            <select id="district" name="district" required>
+                <option value="">Select a district</option>
+                {% for district in districts %}
+                    <option value="{{ district.id }}">{{ district.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="mandal">Mandal</label>
+            <input type="text" id="mandal" name="mandal" required>
+        </div>
+
+        <div class="form-group">
+            <label for="breaking_news">Breaking News</label>
+            <input type="checkbox" id="breaking_news" name="breaking_news">
+        </div>
+
+        <button type="button" onclick="showPreview()">Preview</button>
+        <button type="submit">Submit News</button>
+    </form>
+
+    <!-- Preview section -->
+    <div class="preview" id="newsPreview">
+        <h3 id="previewTitle"></h3>
+        <div id="previewMedia"></div>
+        <div class="preview-content" id="previewContent"></div>
+        <div class="post-meta">
+            Posted on <span id="previewDate"></span> | Views: 0
+        </div>
+        <div class="post-actions">
+            <span>👍 Like</span>
+            <span>👎 Dislike</span>
+            <span>💬 Comment</span>
+            <span>🔗 Share</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function showPreview() {
+        document.getElementById('newsPreview').style.display = 'block';
+
+        document.getElementById('previewTitle').innerText = document.getElementById('title').value;
+        document.getElementById('previewContent').innerText = document.getElementById('content').value;
+        document.getElementById('previewDate').innerText = new Date().toLocaleDateString();
+
+        let mediaDiv = document.getElementById('previewMedia');
+        mediaDiv.innerHTML = '';
+
+        let imageFile = document.getElementById('image').files[0];
+        let videoFile = document.getElementById('video').files[0];
+
+        if (imageFile) {
+            let img = document.createElement('img');
+            img.src = URL.createObjectURL(imageFile);
+            mediaDiv.appendChild(img);
+        }
+        if (videoFile) {
+            let video = document.createElement('video');
+            video.src = URL.createObjectURL(videoFile);
+            video.controls = true;
+            mediaDiv.appendChild(video);
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,12 +1,11 @@
-# models.py
+ # models.py
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
 from django.utils import timezone
 from datetime import timedelta
 
-
-
+# --- existing models you already had (EmailOTP, Reporter, Address, EmailVerificationToken) ---
 class EmailOTP(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)
@@ -36,7 +35,6 @@ class Reporter(models.Model):
     def __str__(self):
         return self.name
 
-
 class Address(models.Model):
     reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE)
     district = models.CharField(max_length=100)
@@ -45,13 +43,11 @@ class Address(models.Model):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=10)
     country = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15)
+    phone = models.CharField(max_length=15)
     is_default = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.state}, {self.city}"
-
-
 
 class EmailVerificationToken(models.Model):
     reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE)
@@ -61,8 +57,58 @@ class EmailVerificationToken(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + timedelta(days=1)  # token valid for 1 day
+            self.expires_at = timezone.now() + timedelta(days=1)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Verification token for {self.reporter.email}"
+
+# --- District model remains ---
+class District(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+# --- SINGLE ClusterAdmin model (remove any duplicate ClusterAdmin class in your file) ---
+class ClusterAdmin(models.Model):
+    
+    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL)
+    # districts the cluster admin manages
+    districts = models.ManyToManyField(District, related_name="assigned_cluster_admins", blank=True)  # one-to-many relationship
+    alternative_mobile = models.CharField(max_length=15, blank=True, null=True)
+    first_name = models.CharField(max_length=50, blank=True, null=True)
+    last_name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    id_proof = models.FileField(upload_to='id_proofs/', blank=True, null=True)
+    profile_picture= models.ImageField(upload_to='passport_photos/', blank=True, null=True)
+    is_appointed = models.BooleanField(default=False)
+    is_accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        # fallback to user if available
+        if self.user:
+            return f"Cluster Admin - {self.user.get_full_name()}"
+        return f"Cluster Admin - {self.first_name} {self.last_name}"
+
+
+class News(models.Model):
+    title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
+    video = models.FileField(upload_to='news_videos/', blank=True, null=True)
+    content = models.TextField()
+
+    District = models.ForeignKey(District, on_delete=models.CASCADE, related_name='news_items')
+    mandal = models.CharField(max_length=100)
+    breaking_news = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    reporter = models.ForeignKey(Reporter, on_delete=models.CASCADE, related_name='news_items', null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+
+  

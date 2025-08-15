@@ -1,481 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News Reels with Top Toggle Menu</title>
-  <style>
-    /* Reset & basic styles */
-    * {
-      box-sizing: border-box;
-    }
-    body, html {
-      margin: 0; padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background: #f8f8f8;
-      overflow: hidden; /* prevent body scroll */
-    }
-
-    /* Top fixed toggle menu container */
-    .top-toggle-container {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      background: #007bff;
-      color: white;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      z-index: 1000;
-      user-select: none;
-    }
-
-    .top-toggle-button {
-      background: white;
-      color: #007bff;
-      border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .top-toggle-button:hover {
-      background-color: #e0e0e0;
-    }
-
-    .top-menu {
-      margin-left: 16px;
-      display: none;
-      gap: 12px;
-    }
-
-    .top-menu button {
-      background: white;
-      color: #007bff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s ease;
-    }
-
-    .top-menu button:hover {
-      background-color: #e0e0e0;
-    }
-
-    /* Container for vertical scroll with top padding to not hide under fixed bar */
-    .news-reels-container {
-      height: 100vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding-top: 50px; /* space for top toggle */
-    }
-
-    /* Each news card fills viewport */
-    .news-card {
-      scroll-snap-align: start;
-      height: 100vh;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      border-bottom: 1px solid #ddd;
-    }
-
-    /* Media container - 40% height */
-    .media-container {
-      height: 40%;
-      background: black;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .media-container img,
-    .media-container video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* News content - 60% height */
-    .news-content {
-      height: 60%;
-      padding: 16px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Toggle comments button */
-    .toggle-comments-btn {
-      align-self: flex-start;
-      margin-bottom: 8px;
-      padding: 6px 12px;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      font-size: 0.9rem;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
-    }
-    .toggle-comments-btn:hover {
-      background-color: #0056b3;
-    }
-
-    .news-text {
-      flex-grow: 1;
-      overflow-y: auto;
-    }
-
-    h3 {
-      margin: 0 0 8px 0;
-      font-size: 1.3rem;
-      color: #222;
-    }
-
-    p {
-      margin: 0;
-      line-height: 1.5;
-      color: #555;
-      font-size: 1rem;
-    }
-
-    /* Buttons container */
-    .actions {
-      margin-top: 12px;
-      display: flex;
-      justify-content: space-around;
-      border-top: 1px solid #eee;
-      padding-top: 12px;
-    }
-
-    .actions button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2rem;
-      color: #444;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: color 0.2s ease;
-    }
-
-    .actions button:hover {
-      color: #000;
-    }
-
-    .actions button span.counter {
-      font-size: 1rem;
-      color: #888;
-    }
-
-    /* Comment section */
-    .comments-section {
-      margin-top: 12px;
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
-      display: none;
-      flex-direction: column;
-      max-height: 150px;
-      overflow-y: auto;
-    }
-
-    .comments-list {
-      list-style: none;
-      padding-left: 0;
-      margin: 0 0 8px 0;
-      max-height: 100px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fafafa;
-    }
-
-    .comments-list li {
-      padding: 6px 8px;
-      border-bottom: 1px solid #ddd;
-      font-size: 0.9rem;
-      color: #333;
-    }
-
-    .comments-list li:last-child {
-      border-bottom: none;
-    }
-
-    .comment-input-container {
-      display: flex;
-      gap: 6px;
-    }
-
-    .comment-input {
-      flex-grow: 1;
-      padding: 6px 8px;
-      font-size: 1rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-
-    .comment-submit-btn {
-      padding: 6px 12px;
-      font-size: 1rem;
-      border: none;
-      background-color: #28a745;
-      color: white;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
-    }
-    .comment-submit-btn:hover {
-      background-color: #1e7e34;
-    }
-
-    /* Scrollbar style for news content */
-    .news-content::-webkit-scrollbar {
-      width: 6px;
-    }
-    .news-content::-webkit-scrollbar-thumb {
-      background: rgba(0,0,0,0.1);
-      border-radius: 3px;
-    }
-
-    /* Responsive max width on bigger screens */
-    @media (min-width: 600px) {
-      .news-card {
-        max-width: 600px;
-        margin: 0 auto;
-        border-radius: 6px;
-        box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reels-style News Feed</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #000;
+            overflow: hidden;
+            height: 100vh;
+            touch-action: pan-y;
+        }
+        
+        .reels-container {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .news-card {
+            width: 100%;
+            height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+        
+        .news-content {
+            height: 40%;
+            position: relative;
+        }
+        
+        .news-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        h2 {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+            z-index: 2;
+            max-width: 90%;
+        }
+        
+        .news-footer {
+            height: 60%;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+        
+        .news-description {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .news-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.8rem;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+        }
+        
+        .engagement-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+        }
+        
+        .engagement-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #555;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .engagement-button i {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .count {
+            font-size: 0.8rem;
+        }
+        
+        /* Video player controls */
+        .video-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        .play-pause {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .news-content:hover .play-pause {
+            opacity: 1;
+        }
+        
+        /* Progress bar */
+        .progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: rgba(255,255,255,0.3);
+            z-index: 2;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: white;
+            width: 0%;
+        }
+        
+        /* Right sidebar actions */
+        .right-actions {
+            position: absolute;
+            right: 10px;
+            bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .action-button {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        
+        .action-button i {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .action-button .count {
+            font-size: 0.8rem;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-
-  <!-- Top toggle menu -->
-  <div class="top-toggle-container">
-    <button id="menuToggleBtn" class="top-toggle-button">☰ Menu</button>
-    <div id="topMenu" class="top-menu">
-      <button onclick="alert('Support clicked!')">Support</button>
-      <button onclick="alert('Post News clicked!')">Post News</button>
+    <div class="reels-container" id="reelsContainer">
+        <!-- News Card 1 -->
+        <div class="news-card">
+            <div class="news-content">
+                <video class="news-image" loop muted playsinline>
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" type="video/mp4">
+                </video>
+                <div class="video-controls">
+                    <div class="play-pause">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                </div>
+                <h2>New Species Discovered in Amazon Rainforest</h2>
+                <div class="right-actions">
+                    <div class="action-button">
+                        <i class="fas fa-heart"></i>
+                        <div class="count">1.2K</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-comment-dots"></i>
+                        <div class="count">243</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-share"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="news-footer">
+                <div class="news-description">
+                    <p>Scientists have discovered a new species of tree frog in the Amazon rainforest. The brightly colored amphibian has unique vocal patterns unlike any previously documented species. This discovery highlights the incredible biodiversity of the region and the importance of conservation efforts.</p>
+                    <p>The research team spent three months in the remote area documenting the species' behavior and habitat. "This find shows how much we still have to learn about our planet," said lead researcher Dr. Maria Silva.</p>
+                </div>
+                <div class="news-meta">
+                    <span class="time"><i class="far fa-clock"></i> 2 hours ago</span>
+                    <span class="views"><i class="far fa-eye"></i> 12.4K views</span>
+                    <span class="category">#Science #Nature</span>
+                </div>
+                <div class="engagement-bar">
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-up"></i>
+                        <span class="count">1.2K</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-down"></i>
+                        <span class="count">24</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-comment"></i>
+                        <span class="count">243</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="fas fa-share"></i>
+                        <span>Share</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- News Card 2 -->
+        <div class="news-card">
+            <div class="news-content">
+                <img src="https://source.unsplash.com/random/600x800/?city,night" alt="News thumbnail" class="news-image">
+                <h2>Major Tech Conference Announces New Innovations</h2>
+                <div class="right-actions">
+                    <div class="action-button">
+                        <i class="fas fa-heart"></i>
+                        <div class="count">3.4K</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-comment-dots"></i>
+                        <div class="count">512</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-share"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="news-footer">
+                <div class="news-description">
+                    <p>The annual Global Tech Summit unveiled groundbreaking advancements in artificial intelligence and quantum computing yesterday. Over 10,000 attendees witnessed demonstrations of technology that could revolutionize multiple industries.</p>
+                    <p>Key announcements included a new AI chip that processes information 100x faster than current models and a quantum computer that achieved "quantum supremacy" on practical business problems. Industry leaders predict these technologies will reach consumers within 3-5 years.</p>
+                </div>
+                <div class="news-meta">
+                    <span class="time"><i class="far fa-clock"></i> 5 hours ago</span>
+                    <span class="views"><i class="far fa-eye"></i> 24.7K views</span>
+                    <span class="category">#Technology #Innovation</span>
+                </div>
+                <div class="engagement-bar">
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-up"></i>
+                        <span class="count">3.4K</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-down"></i>
+                        <span class="count">87</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-comment"></i>
+                        <span class="count">512</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="fas fa-share"></i>
+                        <span>Share</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- News Card 3 -->
+        <div class="news-card">
+            <div class="news-content">
+                <video class="news-image" loop muted playsinline>
+                    <source src="https://assets.mixkit.co/videos/preview/mixkit-scientist-holding-a-vial-1170-large.mp4" type="video/mp4">
+                </video>
+                <div class="video-controls">
+                    <div class="play-pause">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                </div>
+                <h2>Breakthrough in Renewable Energy Storage</h2>
+                <div class="right-actions">
+                    <div class="action-button">
+                        <i class="fas fa-heart"></i>
+                        <div class="count">2.1K</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-comment-dots"></i>
+                        <div class="count">328</div>
+                    </div>
+                    <div class="action-button">
+                        <i class="fas fa-share"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="news-footer">
+                <div class="news-description">
+                    <p>Researchers at MIT have developed a new battery technology that could solve renewable energy's biggest challenge - storage. The innovative design allows for efficient storage of solar and wind energy at scale, with potential to make fossil fuels obsolete.</p>
+                    <p>The technology uses abundant, non-toxic materials and has demonstrated 80% efficiency in early tests. "This could be the missing piece for a fully renewable grid," said project lead Dr. James Chen. Commercial applications are expected within 2 years.</p>
+                </div>
+                <div class="news-meta">
+                    <span class="time"><i class="far fa-clock"></i> 8 hours ago</span>
+                    <span class="views"><i class="far fa-eye"></i> 18.9K views</span>
+                    <span class="category">#Science #Energy</span>
+                </div>
+                <div class="engagement-bar">
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-up"></i>
+                        <span class="count">2.1K</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-thumbs-down"></i>
+                        <span class="count">45</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="far fa-comment"></i>
+                        <span class="count">328</span>
+                    </div>
+                    <div class="engagement-button">
+                        <i class="fas fa-share"></i>
+                        <span>Share</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="news-reels-container" id="newsContainer">
-    <!-- News cards inserted here by JS -->
-  </div>
-
-  <script>
-    // Toggle top menu show/hide
-    const menuToggleBtn = document.getElementById('menuToggleBtn');
-    const topMenu = document.getElementById('topMenu');
-
-    menuToggleBtn.addEventListener('click', () => {
-      if (topMenu.style.display === 'flex') {
-        topMenu.style.display = 'none';
-      } else {
-        topMenu.style.display = 'flex';
-      }
-    });
-
-    const newsData = [
-      {
-        id: 1,
-        type: "image",
-        src: "https://picsum.photos/id/1015/600/400",
-        title: "Breaking News Headline 1",
-        description: "This is the detailed news content for item 1. It explains all about this interesting news."
-      },
-      {
-        id: 2,
-        type: "video",
-        src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm",
-        title: "Video News Headline 2",
-        description: "Detailed news description with video content. Watch this amazing video for more info."
-      },
-      {
-        id: 3,
-        type: "image",
-        src: "https://picsum.photos/id/1022/600/400",
-        title: "Latest Update Headline 3",
-        description: "More news details go here. You can scroll through these news reels smoothly."
-      }
-    ];
-
-    const newsContainer = document.getElementById('newsContainer');
-
-    newsData.forEach(news => {
-      const card = document.createElement('div');
-      card.classList.add('news-card');
-
-      // Media container
-      const mediaDiv = document.createElement('div');
-      mediaDiv.classList.add('media-container');
-      if (news.type === 'image') {
-        const img = document.createElement('img');
-        img.src = news.src;
-        img.alt = news.title;
-        mediaDiv.appendChild(img);
-      } else if (news.type === 'video') {
-        const video = document.createElement('video');
-        video.src = news.src;
-        video.controls = true;
-        mediaDiv.appendChild(video);
-      }
-      card.appendChild(mediaDiv);
-
-      // News content container
-      const contentDiv = document.createElement('div');
-      contentDiv.classList.add('news-content');
-
-      // Toggle comments button
-      const toggleCommentsBtn = document.createElement('button');
-      toggleCommentsBtn.textContent = "Toggle Comments";
-      toggleCommentsBtn.classList.add('toggle-comments-btn');
-
-      // Text container
-      const textDiv = document.createElement('div');
-      textDiv.classList.add('news-text');
-
-      const title = document.createElement('h3');
-      title.textContent = news.title;
-
-      const desc = document.createElement('p');
-      desc.textContent = news.description;
-
-      textDiv.appendChild(title);
-      textDiv.appendChild(desc);
-
-      // Comments section (initially hidden)
-      const commentsSection = document.createElement('div');
-      commentsSection.classList.add('comments-section');
-
-      const commentsList = document.createElement('ul');
-      commentsList.classList.add('comments-list');
-
-      const commentInputContainer = document.createElement('div');
-      commentInputContainer.classList.add('comment-input-container');
-
-      const commentInput = document.createElement('input');
-      commentInput.type = "text";
-      commentInput.placeholder = "Write a comment...";
-      commentInput.classList.add('comment-input');
-
-      const commentSubmitBtn = document.createElement('button');
-      commentSubmitBtn.textContent = "Send";
-      commentSubmitBtn.classList.add('comment-submit-btn');
-
-      commentInputContainer.appendChild(commentInput);
-      commentInputContainer.appendChild(commentSubmitBtn);
-
-      commentsSection.appendChild(commentsList);
-      commentsSection.appendChild(commentInputContainer);
-
-      // Actions container (buttons)
-      const actionsDiv = document.createElement('div');
-      actionsDiv.classList.add('actions');
-
-      // Like button
-      const likeBtn = document.createElement('button');
-      likeBtn.innerHTML = '👍 <span class="counter">0</span>';
-      likeBtn.addEventListener('click', () => {
-        const counterSpan = likeBtn.querySelector('.counter');
-        let count = parseInt(counterSpan.textContent);
-        counterSpan.textContent = count + 1;
-      });
-
-      // Dislike button
-      const dislikeBtn = document.createElement('button');
-      dislikeBtn.innerHTML = '👎 <span class="counter">0</span>';
-      dislikeBtn.addEventListener('click', () => {
-        const counterSpan = dislikeBtn.querySelector('.counter');
-        let count = parseInt(counterSpan.textContent);
-        counterSpan.textContent = count + 1;
-      });
-
-      // Share button
-      const shareBtn = document.createElement('button');
-      shareBtn.textContent = '🔗 Share';
-      shareBtn.addEventListener('click', () => {
-        if (navigator.share) {
-          navigator.share({
-            title: news.title,
-            text: news.description,
-            url: window.location.href,
-          }).catch((error) => {
-            alert("Error sharing: " + error);
-          });
-        } else {
-          alert("Sharing not supported on this browser.");
-        }
-      });
-
-      // Comment button
-      const commentBtn = document.createElement('button');
-      commentBtn.textContent = '💬 Comment';
-      commentBtn.addEventListener('click', () => {
-        // Toggle comment section visibility on comment button click as well
-        if (commentsSection.style.display === 'flex') {
-          commentsSection.style.display = 'none';
-        } else {
-          commentsSection.style.display = 'flex';
-          commentInput.focus();
-        }
-      });
-
-      // Append buttons to actions
-      actionsDiv.appendChild(likeBtn);
-      actionsDiv.appendChild(dislikeBtn);
-      actionsDiv.appendChild(shareBtn);
-      actionsDiv.appendChild(commentBtn);
-
-      // Toggle comments button toggles comment section visibility
-      toggleCommentsBtn.addEventListener('click', () => {
-        if (commentsSection.style.display === 'flex') {
-          commentsSection.style.display = 'none';
-        } else {
-          commentsSection.style.display = 'flex';
-          commentInput.focus();
-        }
-      });
-
-      // Add new comment logic
-      commentSubmitBtn.addEventListener('click', () => {
-        const text = commentInput.value.trim();
-        if (text === "") return;
-        const li = document.createElement('li');
-        li.textContent = text;
-        commentsList.appendChild(li);
-        commentInput.value = "";
-        // Scroll to bottom so new comment is visible
-        commentsList.scrollTop = commentsList.scrollHeight;
-      });
-
-      // Enter key submits comment
-      commentInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          commentSubmitBtn.click();
-        }
-      });
-
-      contentDiv.appendChild(toggleCommentsBtn);
-      contentDiv.appendChild(textDiv);
-      contentDiv.appendChild(commentsSection);
-      contentDiv.appendChild(actionsDiv);
-
-      card.appendChild(contentDiv);
-      newsContainer.appendChild(card);
-    });
-  </script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('reelsContainer');
+            const cards = document.querySelectorAll('.news-card');
+            const videos = document.querySelectorAll('video');
+            
+            // Handle scroll snapping
+            let isScrolling = false;
+            let startY = 0;
+            let scrollTimeout;
+            
+            container.addEventListener('scroll', function() {
+                clearTimeout(scrollTimeout);
+                isScrolling = true;
+                
+                scrollTimeout = setTimeout(function() {
+                    isScrolling = false;
+                    snapToNearestCard();
+                }, 100);
+            });
+            
+            // Touch events for better mobile handling
+            container.addEventListener('touchstart', function(e) {
+                startY = e.touches[0].clientY;
+            });
+            
+            container.addEventListener('touchend', function() {
+                if (!isScrolling) {
+                    snapToNearestCard();
+                }
+            });
+            
+            function snapToNearestCard() {
+                const containerRect = container.getBoundingClientRect();
+                const containerCenter = containerRect.top + (containerRect.height / 2);
+                
+                let closestCard = null;
+                let minDistance = Infinity;
+                
+                cards.forEach(card => {
+                    const cardRect = card.getBoundingClientRect();
+                    const cardCenter = cardRect.top + (cardRect.height / 2);
+                    const distance = Math.abs(cardCenter - containerCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestCard = card;
+                    }
+                });
+                
+                if (closestCard) {
+                    const scrollPosition = closestCard.offsetTop - container.offsetTop;
+                    container.scrollTo({
+                        top: scrollPosition,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Pause all videos except the current one
+                    const currentVideo = closestCard.querySelector('video');
+                    videos.forEach(video => {
+                        if (video !== currentVideo) {
+                            video.pause();
+                            const playBtn = video.closest('.news-content').querySelector('.play-pause i');
+                            if (playBtn) playBtn.className = 'fas fa-play';
+                        }
+                    });
+                }
+            }
+            
+            // Video controls
+            cards.forEach(card => {
+                const video = card.querySelector('video');
+                const playPauseBtn = card.querySelector('.play-pause');
+                const progressBar = card.querySelector('.progress-bar');
+                
+                if (video) {
+                    // Click to play/pause
+                    card.querySelector('.news-content').addEventListener('click', function() {
+                        if (video.paused) {
+                            video.play();
+                            playPauseBtn.querySelector('i').className = 'fas fa-pause';
+                        } else {
+                            video.pause();
+                            playPauseBtn.querySelector('i').className = 'fas fa-play';
+                        }
+                    });
+                    
+                    // Play/pause button
+                    if (playPauseBtn) {
+                        playPauseBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            if (video.paused) {
+                                video.play();
+                                playPauseBtn.querySelector('i').className = 'fas fa-pause';
+                            } else {
+                                video.pause();
+                                playPauseBtn.querySelector('i').className = 'fas fa-play';
+                            }
+                        });
+                    }
+                    
+                    // Update progress bar
+                    video.addEventListener('timeupdate', function() {
+                        if (progressBar) {
+                            const progress = (video.currentTime / video.duration) * 100;
+                            progressBar.style.width = progress + '%';
+                        }
+                    });
+                    
+                    // Reset video when it ends
+                    video.addEventListener('ended', function() {
+                        video.currentTime = 0;
+                        video.play();
+                    });
+                }
+            });
+            
+            // Auto-play first video
+            if (videos.length > 0) {
+                const firstVideo = videos[0];
+                firstVideo.play();
+                const firstPlayBtn = firstVideo.closest('.news-content').querySelector('.play-pause i');
+                if (firstPlayBtn) firstPlayBtn.className = 'fas fa-pause';
+            }
+            
+            // Handle visibility changes
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    videos.forEach(video => video.pause());
+                }
+            });
+        });
+    </script>
 </body>
 </html>

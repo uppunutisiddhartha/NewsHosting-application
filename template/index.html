@@ -166,7 +166,9 @@
     </a>
   </div>
 
-  <a class="back-link" href="{% url 'reporter_login' %}">← Go back to login</a>
+  
+  <a class="back-link" href="{% url 'reporter_login' %}">Reporter login</a>
+  <a class="back-link" href="{% url 'superadmin' %}">← Go back to login</a>
 
   <!-- Messages -->
   <div class="messages">
@@ -178,6 +180,9 @@
       </ul>
     {% endif %}
   </div>
+<button onclick="window.location.href='{% url 'cluster_admin_login' %}'" class="btn btn-secondary">
+  Go to Cluster Admin Login
+</button>
 
   <!-- OTP Request Form -->
   <form method="POST" action="{% url 'send_email_otp' %}">
